@@ -1,0 +1,90 @@
+plugins {
+    id 'java'
+    id 'org.springframework.boot' version '3.2.5'
+    id 'io.spring.dependency-management' version '1.1.7'
+}
+
+group = 'com.example'
+version = '0.0.1-SNAPSHOT'
+description = 'Big Data Project - 2'
+
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(17)
+    }
+}
+
+repositories {
+    mavenCentral()
+    maven { url 'https://repo.spring.io/milestone' }
+}
+
+ext {
+    set('springAiVersion', "1.0.0-M1")
+
+    // 1. Tell Spring Dependency Management plugin to upgrade Jackson globally
+    set('jackson-bom.version', '2.15.4')
+}
+
+// 2. Global resolution strategy for Hadoop's non-Spring transitive dependencies
+configurations.all {
+    resolutionStrategy.eachDependency { DependencyResolveDetails details ->
+        if (details.requested.group == 'org.apache.avro' && details.requested.name == 'avro') {
+            details.useVersion '1.11.3'
+            details.because 'Fixes CVE-2023-39410 deserialization vulnerability'
+        }
+        if (details.requested.group == 'com.fasterxml.woodstox' && details.requested.name == 'woodstox-core') {
+            details.useVersion '6.5.1'
+            details.because 'Fixes CVE-2022-40152 DoS vulnerability'
+        }
+    }
+}
+
+dependencies {
+    // Web & UI
+    implementation 'org.springframework.boot:spring-boot-starter-web'
+    implementation 'org.springframework.boot:spring-boot-starter-thymeleaf'
+
+    // Relational DB (PostgreSQL)
+    implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
+    runtimeOnly 'com.mysql:mysql-connector-j'
+
+    // Redis Cache
+    implementation 'org.springframework.boot:spring-boot-starter-data-redis'
+    implementation 'org.springframework.boot:spring-boot-starter-cache'
+
+    // Lombok
+    compileOnly 'org.projectlombok:lombok'
+    annotationProcessor 'org.projectlombok:lombok'
+
+    // Hadoop Dependencies (v3.3.4)
+    implementation('org.apache.hadoop:hadoop-client:3.3.4') {
+        exclude group: 'org.slf4j', module: 'slf4j-reload4j'
+        exclude group: 'commons-configuration', module: 'commons-configuration'
+    }
+    implementation('org.apache.hadoop:hadoop-common:3.3.4') {
+        exclude group: 'org.slf4j', module: 'slf4j-reload4j'
+        exclude group: 'commons-configuration', module: 'commons-configuration'
+    }
+    // Replace vulnerable commons-configuration 1.x with commons-configuration2
+    implementation 'org.apache.commons:commons-configuration2:2.10.1'
+
+    // Ollama Integration (Spring AI)
+    implementation 'org.springframework.ai:spring-ai-ollama-spring-boot-starter'
+
+    // Testing
+    testImplementation 'org.springframework.boot:spring-boot-starter-test'
+    testCompileOnly 'org.projectlombok:lombok'
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+    testAnnotationProcessor 'org.projectlombok:lombok'
+}
+
+dependencyManagement {
+    imports {
+        mavenBom "org.springframework.ai:spring-ai-bom:${springAiVersion}"
+    }
+}
+
+tasks.named('test') {
+    useJUnitPlatform()
+}

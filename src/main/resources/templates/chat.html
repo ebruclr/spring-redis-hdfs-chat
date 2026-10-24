@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Chat with llama3.2:latest</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body>
+<div class="container">
+    <header>
+        <h1>Big Data Second Project</h1>
+        <nav>
+            <a href="/">Orders</a>
+            <a href="/chat" class="active">AI Chat</a>
+        </nav>
+    </header>
+
+    <main class="chat-main">
+        <h2>Local LLM (Llama 3.2) Chatting</h2>
+
+        <div id="chat-box" class="chat-box">
+            <div class="message bot-message">
+                <strong>Llama 3.2</strong> Hello! I am an artificial intelligent working locally on Ollama server
+            </div>
+        </div>
+
+        <form id="chat-form" class="chat-form">
+            <input type="text" id="user-input" placeholder="Write you message...">
+            <button type="submit" id="send-btn">Send</button>
+        </form>
+    </main>
+</div>
+<script th:src="@{/js/chat.js}"></script>
+</body>
+</html>
